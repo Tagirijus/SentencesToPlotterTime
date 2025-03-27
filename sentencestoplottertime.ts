@@ -32,7 +32,6 @@ async function countSentencesInParagraphs(content: string): number {
 
   let ignore_character_group = '';
   const config = await getConfig();
-  console.log(config);
   if (config.ignore_headings) {
     ignore_character_group += '#';
   }
