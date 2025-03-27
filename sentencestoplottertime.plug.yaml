@@ -1,0 +1,7 @@
+name: sentencestoplottertime
+functions:
+  showPlotterTime:
+    path: sentencestoplottertime.ts:showPlotterTime
+    command:
+      name: "Show plotter time for selected text or whole document"
+      key: "Alt-l"
