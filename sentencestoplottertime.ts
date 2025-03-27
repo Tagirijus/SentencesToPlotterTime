@@ -36,10 +36,10 @@ async function countSentencesInParagraphs(content: string): number {
     ignore_character_group += '#';
   }
   if (config.ignore_lists) {
-    ignore_character_group += '-*';
+    ignore_character_group += '*-';
   }
 
-  let ignore_regex = new RegExp(`^[${ignore_character_group}]`);
+  let ignore_regex = new RegExp(`^\s*[${ignore_character_group}]`);
 
   content.split("\n").forEach(line => {
     let trimmedLine = line.trim();
