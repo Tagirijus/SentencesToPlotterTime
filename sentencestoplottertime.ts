@@ -2,7 +2,8 @@ import { editor, system } from "@silverbulletmd/silverbullet/syscalls";
 
 
 const defaultConfig = {
-  seconds_per_sentence: 15,
+  seconds_per_sentence: 20,
+  milliseconds_per_word: 2000,
   ignore_headings: true,
   ignore_lists: true
 };
@@ -14,12 +15,14 @@ export async function showPlotterTime() {
     content = content.slice(selection.from, selection.to);
   };
 
-  let count = await countSentencesInParagraphs(content);
+  let countSentences = await countSentencesInParagraphs(content);
+  let countWords = await countWordsInParagraphs(content);
   const config = await getConfig();
 
-  let seconds = count * config.seconds_per_sentence;
+  let seconds_sentences = countSentences * config.seconds_per_sentence;
+  let seconds_words = countWords * config.milliseconds_per_word;
 
-  await editor.flashNotification("Plotter runtime: " + formatTime(seconds) + " seconds.", "info");
+  await editor.flashNotification("Plotter runtime: " + formatTime(seconds_sentences, false) + " min [by sentence] or " + formatTime(seconds_words, true) + " min [by words].", "info");
 }
 
 async function getConfig() {
@@ -52,7 +55,36 @@ async function countSentencesInParagraphs(content: string): number {
   return totalSentences;
 }
 
-function formatTime(seconds) {
+async function countWordsInParagraphs(content: string): number {
+  let totalWords = 0;
+  let wordRegex = /\b\w+\b/g;
+
+  let ignore_character_group = '';
+  const config = await getConfig();
+  if (config.ignore_headings) {
+    ignore_character_group += '#';
+  }
+  if (config.ignore_lists) {
+    ignore_character_group += '*-';
+  }
+
+  let ignore_regex = new RegExp(`^\s*[${ignore_character_group}]`);
+
+  content.split("\n").forEach(line => {
+    let trimmedLine = line.trim();
+    if (!ignore_regex.test(trimmedLine)) {
+      let words = trimmedLine.match(wordRegex) || [];
+      totalWords += words.length;
+    }
+  });
+
+  return totalWords;
+}
+
+function formatTime(seconds, milliseconds) {
+  if (milliseconds) {
+    seconds = seconds / 1000;
+  }
   let minutes = Math.floor(seconds / 60);
   let remainingSeconds = seconds % 60;
 
